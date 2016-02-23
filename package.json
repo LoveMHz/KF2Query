@@ -23,5 +23,8 @@
   "bugs": {
     "url": "https://github.com/LoveMHz/KF2QueryNode/issues"
   },
-  "homepage": "https://github.com/LoveMHz/KF2QueryNode#readme"
+  "homepage": "https://github.com/LoveMHz/KF2QueryNode#readme",
+  "bin": {
+    "snippet": "./index.js"
+  }
 }
