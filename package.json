@@ -26,5 +26,8 @@
   "homepage": "https://github.com/LoveMHz/KF2QueryNode#readme",
   "bin": {
     "snippet": "./index.js"
+  },
+  "dependencies": {
+    "buffer-reader": "^0.1.0"
   }
 }
