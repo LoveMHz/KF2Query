@@ -7,13 +7,34 @@ var BufferReader = require('buffer-reader');
 var HOST = process.argv[2];
 var PORT = parseInt(process.argv[3], 10);
 
-var message = new Buffer([0xFF, 0xFF, 0xFF, 0xFF, 0x54, 0x53, 0x6F, 0x75, 0x72, 0x63, 0x65, 0x20, 0x45, 0x6E, 0x67, 0x69, 0x6E, 0x65, 0x20, 0x51, 0x75, 0x65, 0x72, 0x79, 0x00]);
+var message = new Buffer([
+  0xFF, 0xFF, 0xFF, 0xFF, 0x54, 0x53, 0x6F, 0x75, 0x72, 0x63, 0x65, 0x20, 0x45,
+  0x6E, 0x67, 0x69, 0x6E, 0x65, 0x20, 0x51, 0x75, 0x65, 0x72, 0x79, 0x00
+]);
 
 var client = dgram.createSocket('udp4');
 
 client.on('listening', function () {
     var address = client.address();
 });
+
+client.on('message', function (message, remote) {
+  var buffer = new BufferReader(message);
+
+  // Get the header of packet (long)
+  var header = buffer.nextInt32LE();
+
+  // Single Packet
+  if (header == -1)  {
+    processDetails(buffer);
+  }
+  // TODO: Handle multi packet data
+});
+
+client.send(message, 0, message.length, PORT, HOST, function(err, bytes) {
+  if (err) throw err;
+});
+
 
 function processDetails(buffer) {
   var details = {
@@ -63,20 +84,3 @@ function processDetails(buffer) {
 
   return details;
 }
-
-client.on('message', function (message, remote) {
-  var buffer = new BufferReader(message);
-
-  // Get the header of packet (long)
-  var header = buffer.nextInt32LE();
-
-  // Single Packet
-  if (header == -1)  {
-    processDetails(buffer);
-  }
-  // TODO: Handle multi packet data
-});
-
-client.send(message, 0, message.length, PORT, HOST, function(err, bytes) {
-  if (err) throw err;
-});
