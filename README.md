@@ -1,2 +1,2 @@
 # KF2QueryNode
-Killing Floor 2 Server Query NodeJS Service
+Killing Floor 2 Server Query NodeJS
