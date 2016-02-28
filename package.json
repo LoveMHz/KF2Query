@@ -1,5 +1,5 @@
 {
-  "name": "kf2querynode",
+  "name": "kf2query",
   "version": "1.0.0",
   "description": "Killing Floor 2 Server Query NodeJS Service",
   "main": "index.js",
