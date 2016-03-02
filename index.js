@@ -7,12 +7,16 @@ module.exports = function(host, port) {
   this.port = port;
 
   // Const Varibles
-  const REQUEST_PLAYERS = new Buffer([
+  const REQUEST_CHALLENGE = new Buffer([
+    0xFF, 0xFF, 0xFF, 0xFF, 0x55, 0xFF, 0xFF, 0xFF, 0xFF
+  ]);
+
+  const REQUEST_DETAILS = new Buffer([
     0xFF, 0xFF, 0xFF, 0xFF, 0x54, 0x53, 0x6F, 0x75, 0x72, 0x63, 0x65, 0x20, 0x45,
     0x6E, 0x67, 0x69, 0x6E, 0x65, 0x20, 0x51, 0x75, 0x65, 0x72, 0x79, 0x00
   ]);
 
-  const REQUEST_DETAILS = new Buffer([0xFF, 0xFF, 0xFF, 0xFF, 0x55]);
+  const REQUEST_PLAYERS = new Buffer([0xFF, 0xFF, 0xFF, 0xFF, 0x55]);
   const REQUEST_RULES   = new Buffer([0xFF, 0xFF, 0xFF, 0xFF, 0x56]);
 
   const PACKET_CHALLENGE = 'A';
@@ -27,24 +31,44 @@ module.exports = function(host, port) {
     Players : [],
     Details : [],
     Rules   : []
-  }
+  };
+
+  var challenge_buffer = null;
+  var challenge_callbacks = [];
 
   // Public Functions
   this.getPlayers = function(callback) {
+    // Request challenge
+    requestChallengeResponse(function() {
+      var request = Buffer.concat([REQUEST_PLAYERS, challenge_buffer]);
 
+      client.send(request, 0, request.length, port, host, function(err, bytes) {
+        if (err) callback({error: err});
+      });
+
+      socket_callbacks.Players.push(callback);
+    });
   }
 
   this.getDetails = function(callback) {
-    client.send(REQUEST_PLAYERS, 0, REQUEST_PLAYERS.length, port, host, function(err, bytes) {
-      // TODO: Handle error
-      if (err) throw err;
+    client.send(REQUEST_DETAILS, 0, REQUEST_DETAILS.length, port, host, function(err, bytes) {
+      if (err) callback({error: err});
     });
 
     socket_callbacks.Details.push(callback);
   }
 
   this.getRules = function(callback) {
+    // Request challenge
+    requestChallengeResponse(function() {
+      var request = Buffer.concat([REQUEST_RULES, challenge_buffer]);
 
+      client.send(request, 0, request.length, port, host, function(err, bytes) {
+        if (err) callback({error: err});
+      });
+
+      socket_callbacks.Rules.push(callback);
+    });
   }
 
   // Construct
@@ -63,9 +87,17 @@ module.exports = function(host, port) {
 
   // Private Functions
   function handleCallback(callback_array, data) {
-    while(callback_array.length > 0) {
+    while (callback_array.length > 0) {
       callback_array.pop()(data);
     }
+  }
+
+  function requestChallengeResponse(callback) {
+    client.send(REQUEST_CHALLENGE, 0, REQUEST_CHALLENGE.length, port, host, function(err, bytes) {
+      if (err) callback({error: err});
+    });
+
+    challenge_callbacks.push(callback);
   }
 
   function proccessPacket(buffer) {
@@ -75,7 +107,7 @@ module.exports = function(host, port) {
       case PACKET_CHALLENGE:
         return processChallenge(buffer);
       case PACKET_PLAYERS:
-        return handleCallback(socket_callbacks.Players, processRules(buffer));
+        return handleCallback(socket_callbacks.Players, processPlayers(buffer));
       case PACKET_DETAILS:
         return handleCallback(socket_callbacks.Details, processDetails(buffer));
       case PACKET_RULES:
@@ -87,15 +119,29 @@ module.exports = function(host, port) {
   }
 
   function processChallenge(buffer) {
-    this.challenge = 'temp';
+    challenge_buffer = buffer.nextBuffer(4);
+
+    while (challenge_callbacks.length > 0) {
+      challenge_callbacks.pop()();
+    }
   }
 
   function processPlayers(buffer) {
-    var players = {
+    var data = {
+      player_count : buffer.nextUInt8(),
+      players      : []
+    };
 
+    for (var i = 0; i < data.player_count; i++) {
+      data.players.push({
+        id    : buffer.nextUInt8(),
+        name  : buffer.nextStringZero(),
+        score : buffer.nextInt32LE(),
+        time  : buffer.nextInt32LE()
+      });
     }
 
-    return players;
+    return data;
   }
 
   function processDetails(buffer) {
@@ -147,10 +193,27 @@ module.exports = function(host, port) {
   }
 
   function processRules(buffer) {
-    var rules = {
+    var data = {
+      rules_count : buffer.nextUInt16LE(),
+      rules       : []
+    };
 
+    for (var i = 0; i < data.rules_count; i++) {
+      var name  = buffer.nextStringZero();
+      var value = buffer.nextStringZero();
+
+      // Cleanup values type
+      if (!isNaN(value))
+        value = Number(value);
+      else if (value === 'True' || value === 'False')
+        value = (value === 'True' ? true : false);
+
+      data.rules.push({
+        name  : name,
+        value : value
+      });
     }
 
-    return rules;
+    return data;
   }
 };
