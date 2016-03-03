@@ -1,4 +1,5 @@
 # KF2Query
+[![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com/)
 
 Killing Floor 2 Server Query NodeJS
 
