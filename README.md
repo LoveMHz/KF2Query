@@ -1,5 +1,5 @@
 # KF2Query
-![Image of KF2Query](https://raw.githubusercontent.com/LoveMHz/KF2Query/gh-pages/images/header_kf2query.png)
+[![KF2Query](https://raw.githubusercontent.com/LoveMHz/KF2Query/gh-pages/images/header_kf2query.png)](http://lovemhz.com/projects/kf2query/)
 
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com/)
 
