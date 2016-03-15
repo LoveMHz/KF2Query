@@ -1,7 +1,7 @@
 # KF2Query
 [![KF2Query](https://raw.githubusercontent.com/LoveMHz/KF2Query/gh-pages/images/header_kf2query.png)](http://lovemhz.com/projects/kf2query/)
 
-[![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com/) [![Build Status](https://travis-ci.org/LoveMHz/KF2Query.svg?branch=master)](https://travis-ci.org/LoveMHz/KF2Query)
+[![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com/) [![Build Status](https://travis-ci.org/LoveMHz/KF2Query.svg?branch=master)](https://travis-ci.org/LoveMHz/KF2Query) [![npm version](https://badge.fury.io/js/kf2query.svg)](https://www.npmjs.com/package/kf2query)
 
 KF2Query is a Node JS module for interacting with the Killing Floor 2 server via the Steam Query protocol.
 
